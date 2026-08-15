@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started — nomba-rust Rust SDK</title>
+<meta name="description" content="Add nomba-rust to Cargo.toml, authenticate with sync or async client, and make your first request — full error handling with match and typed responses.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<button class="nav-toggle" aria-label="Toggle navigation" aria-controls="sidebar">Menu</button>
+<div class="shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">nomba-rust <span class="stamp">RUST-SDK</span></div>
+    <div class="brand-sub">unofficial &middot; v0.1.0</div>
+    <nav class="toc">
+      <a href="index.html">Overview</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="features.html">Advanced features</a>
+      <a href="resources.html">API reference</a>
+      <div class="group-label">Resource groups</div>
+      <a href="resources.html#accounts">Accounts</a>
+      <a href="resources.html#virtual_accounts">Virtual Accounts</a>
+      <a href="resources.html#checkout">Online Checkout</a>
+      <a href="resources.html#charge">Charge</a>
+      <a href="resources.html#transfers">Transfers</a>
+      <a href="resources.html#terminals">Terminals</a>
+      <a href="resources.html#transactions">Transactions</a>
+      <a href="resources.html#airtime_data">Airtime and Data Vending</a>
+      <a href="resources.html#cabletv">CableTV Subscription</a>
+      <a href="resources.html#electricity">Electricity Vending</a>
+      <a href="resources.html#betting">Betting</a>
+      <a href="resources.html#direct_debits">Direct Debits</a>
+      <a href="resources.html#global_collections">Global Collections</a>
+      <a href="resources.html#global_payout">Global Payout</a>
+      <a href="resources.html#auth">Auth</a>
+      <div class="group-label">More</div>
+      <a href="changelog.html">Changelog</a>
+    </nav>
+  </aside>
+
+  <main>
+    <span class="eyebrow">Getting started</span>
+    <h1>Install, authenticate, request.</h1>
+    <p>Three things you need from your Nomba dashboard: a <code>client_id</code>, a <code>client_secret</code>, and an <code>account_id</code>. The SDK handles the OAuth2 token exchange for you from there.</p>
+
+    <h2>Install</h2>
+    <pre><code>cargo add nomba
+# or add to Cargo.toml:
+# nomba = { git = "https://github.com/RightFix/nomba", branch = "main" }
+# nomba = { version = "0.1", features = ["async", "validation"] }  # optional features</code></pre>
+
+    <h2>Feature flags</h2>
+    <p>The SDK has three feature flags (all enabled by default except <code>validation</code>):</p>
+    <ul style="color: var(--ink-dim); max-width: 68ch;">
+      <li><strong>blocking</strong> (default) — enables the synchronous <code>Nomba</code> client</li>
+      <li><strong>async</strong> (default) — enables the asynchronous <code>AsyncNomba</code> client (requires Tokio)</li>
+      <li><strong>validation</strong> — enables local request validation against the bundled OpenAPI spec</li>
+    </ul>
+
+    <h2>Sync client</h2>
+    <p>Create one <code>Nomba</code> instance and reuse it; it manages its own HTTP connection pool and OAuth2 token cache.</p>
+    <pre><code>use nomba::{Nomba, NombaClientConfig};
+
+fn main() -> nomba::Result<()> {
+    let nomba = Nomba::new(
+        "your_client_id",
+        "your_client_secret",
+        "your_account_id",
+    )?;
+
+    // Or with custom config
+    let config = NombaClientConfig::new(
+        "client_id".into(),
+        "client_secret".into(),
+        "account_id".into(),
+    )
+    .sandbox(true)
+    .timeout(std::time::Duration::from_secs(60));
+
+    let account = nomba.virtual_accounts.create_virtual_account(
+        "acct-jane",
+        "Jane Doe",
+        None, None, None
+    )?;
+
+    println!("Account: {:?}", account.data.account_ref);
+    Ok(())
+}</code></pre>
+
+    <h2>Async client</h2>
+    <p>Rust async with Tokio — every resource method is an <code>async</code> function returning a <code>Future</code>.</p>
+    <pre><code>use nomba::AsyncNomba;
+
+#[tokio::main]
+async fn main() -> nomba::Result<()> {
+    let nomba = AsyncNomba::new(
+        "your_client_id",
+        "your_client_secret",
+        "your_account_id",
+    ).await?;
+
+    let account = nomba.virtual_accounts.create_virtual_account(
+        "acct-jane",
+        "Jane Doe",
+        None, None, None
+    ).await?;
+
+    println!("Account: {:?}", account.data.account_ref);
+    Ok(())
+}</code></pre>
+
+    <h2>Sandbox mode</h2>
+    <p>Pass <code>sandbox(true)</code> in the config or use the convenience constructors:</p>
+    <pre><code>let nomba = Nomba::new_sandbox("id", "secret", "account_id")?;
+let async_nomba = AsyncNomba::new_sandbox("id", "secret", "account_id").await?;</code></pre>
+
+    <h2>Error handling</h2>
+    <p>All errors are <code>NombaError</code> enum variants. Use <code>match</code> for exhaustive handling:</p>
+    <pre><code>use nomba::{NombaError, Result};
+
+match nomba.virtual_accounts.create_virtual_account("ref", "Name", None, None, None) {
+    Ok(response) => println!("Success: {:?}", response),
+    Err(NombaError::Api { status_code, code, .. }) => {
+        eprintln!("API error: {} (status: {:?})", code.unwrap_or_default(), status_code);
+    }
+    Err(NombaError::Auth { .. }) => {
+        eprintln!("Authentication failed");
+    }
+    Err(NombaError::Validation { missing, .. }) => {
+        eprintln!("Validation failed: missing fields: {:?}", missing);
+    }
+    Err(e) => eprintln!("Error: {}", e),
+}</code></pre>
+
+    <div class="callout">
+      <span class="label">Note</span>
+      <p><code>NombaError::Validation</code> is raised <em>before</em> any request goes out when the <code>validation</code> feature is enabled — it checks nested required fields against Nomba's own spec. See <a href="features.html#validation">request validation</a>.</p>
+    </div>
+
+    <h2>Response shape</h2>
+    <p>Every method returns a typed <code>Result<T></code> generated from Nomba's response schema, mirroring Nomba's actual JSON keys (camelCase, not snake_case):</p>
+    <pre><code>let account = nomba.virtual_accounts.create_virtual_account(
+    "acct-jane", "Jane Doe", None, None, None
+)?;
+println!("{}", account.data.account_ref);
+println!("{} {}", account.code, account.description);</code></pre>
+
+    <h2>Creating a checkout order</h2>
+    <p>The checkout order body takes an order object with customer details and amount:</p>
+    <pre><code>let order = nomba.checkout.create_order(
+    "order-001",
+    "1000",
+    "NGN",
+    "jane@example.com",
+    "Jane Doe",
+    "https://example.com/callback",
+    None, None
+)?;
+println!("Checkout link: {}", order.data.checkout_link);</code></pre>
+
+    <h2>Local request validation</h2>
+    <p>With the <code>validation</code> feature, write calls (<code>POST</code>/<code>PUT</code>) are validated against Nomba's bundled OpenAPI spec before any network request:</p>
+    <pre><code>use nomba::{validate_body, NombaError};
+use serde_json::json;
+
+let body = json!({
+    "orderReference": "order-001",
+    "customerId": "cust-001",
+    "callbackUrl": "https://example.com/cb",
+    "customerEmail": "jane@example.com",
+    "amount": 1000,
+    "currency": "NGN",
+    "allowedPaymentMethods": ["CARD", "ACCOUNT_TRANSFER"],
+});
+
+match validate_body("post", "/v1/checkout/orders", &body) {
+    Ok(_) => println!("Request is valid"),
+    Err(NombaError::Validation { missing, .. }) => {
+        eprintln!("Missing fields: {:?}", missing);
+    }
+    Err(e) => eprintln!("Error: {}", e),
+}</code></pre>
+
+    <div class="page-foot">
+      <span>nomba-rust &middot; unofficial Rust SDK</span>
+      <span><a href="resources.html">API reference</a> &middot; <a href="features.html">Advanced features</a></span>
+    </div>
+  </main>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

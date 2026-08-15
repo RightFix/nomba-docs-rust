@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Changelog — nomba-rust Rust SDK</title>
+<meta name="description" content="Version history for the nomba-rust Rust SDK.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<button class="nav-toggle" aria-label="Toggle navigation" aria-controls="sidebar">Menu</button>
+<div class="shell">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">nomba-rust <span class="stamp">RUST-SDK</span></div>
+    <div class="brand-sub">unofficial &middot; v0.1.0</div>
+    <nav class="toc">
+      <a href="index.html">Overview</a>
+      <a href="getting-started.html">Getting started</a>
+      <a href="features.html">Advanced features</a>
+      <a href="resources.html">API reference</a>
+      <div class="group-label">Resource groups</div>
+      <a href="resources.html#accounts">Accounts</a>
+      <a href="resources.html#virtual_accounts">Virtual Accounts</a>
+      <a href="resources.html#checkout">Online Checkout</a>
+      <a href="resources.html#charge">Charge</a>
+      <a href="resources.html#transfers">Transfers</a>
+      <a href="resources.html#terminals">Terminals</a>
+      <a href="resources.html#transactions">Transactions</a>
+      <a href="resources.html#airtime_data">Airtime and Data Vending</a>
+      <a href="resources.html#cabletv">CableTV Subscription</a>
+      <a href="resources.html#electricity">Electricity Vending</a>
+      <a href="resources.html#betting">Betting</a>
+      <a href="resources.html#direct_debits">Direct Debits</a>
+      <a href="resources.html#global_collections">Global Collections</a>
+      <a href="resources.html#global_payout">Global Payout</a>
+      <a href="resources.html#auth">Auth</a>
+      <div class="group-label">More</div>
+      <a href="changelog.html">Changelog</a>
+    </nav>
+  </aside>
+
+  <main>
+    <span class="eyebrow">Changelog</span>
+    <h1>Version history</h1>
+
+    <h2>0.1.0</h2>
+    <p>Initial release of the Rust SDK, aligned with Nomba's published OpenAPI spec and the <code>nomba-python</code> SDK for full feature parity.</p>
+    <ul style="color: var(--ink-dim);">
+      <li>99 endpoints from Nomba's OpenAPI spec, across 15 resource groups.</li>
+      <li>Auth via client-credentials <code>/v1/auth/token/issue</code>, with transparent token caching and <code>revoke_access_token</code> on <code>/v1/auth/token/revoke</code>.</li>
+      <li>Full Accounts surface: list/create sub accounts, parent &amp; sub balances, suspend/reactivate, access control, and terminal assignment.</li>
+      <li>Virtual Accounts on <code>/v1/accounts/virtual/*</code>: create (parent or sub), fetch, filter, update, and expire.</li>
+      <li>Online Checkout covering orders, transaction management, refunds, card-detail/OTP flows, flash account numbers, and the saved-card OTP flow.</li>
+      <li>Charge sequence on <code>/v1/charge/*</code>: tokenized cards, bank lookup, card details, OTP, resend, and confirm.</li>
+      <li>Transfers: bank/wallet transfers from parent or sub accounts, authorize, exchange authorize, convert, and live exchange rates (<code>/v1/transfers/*</code>).</li>
+      <li>Terminals: assign/unassign (parent or sub account) and send a payment request to a terminal.</li>
+      <li>Airtime &amp; Data vending with <code>product_id</code> and network-aware data-plan lookup on <code>/v1/bill/*</code>.</li>
+      <li>CableTV lookup, subscribe, and product-plan fetch on <code>/v1/bill/cableTvProduct</code>.</li>
+      <li>Electricity and Betting vending with provider/customer lookups.</li>
+      <li>Direct Debits mandates on <code>/v1/direct-debits/*</code>: create, list, status, update, and debit.</li>
+      <li>Global Collections and Global Payout (accounts, transfer/exchange authorize, inflows).</li>
+      <li>Sync-first design with a parallel async client (<code>Nomba</code> vs <code>AsyncNomba</code>) behind <code>blocking</code> / <code>async</code> features.</li>
+      <li>Typed responses via <code>serde</code>, with <code>cargo</code> install and <code>cargo add</code> support.</li>
+      <li>Cursor pagination helpers (<code>paginate</code> / <code>apaginate</code> generators).</li>
+      <li>Guided card-payment OTP/3DS flow (<code>CardPaymentFlow</code>) with sync and async variants.</li>
+      <li>Webhook signature verification with replay-window protection.</li>
+      <li>Retry-with-backoff on 429/5xx and bounded-concurrency helpers (<code>gather_limited</code> / <code>gather_limited_async</code>).</li>
+      <li>Optional nested request-body validation against the bundled OpenAPI spec (<code>validation</code> feature).</li>
+    </ul>
+
+    <div class="page-foot">
+      <span>nomba-rust &middot; unofficial Rust SDK</span>
+      <span><a href="index.html">Overview</a></span>
+    </div>
+  </main>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://RightFix.github.io/nomba-docs-rust/sitemap.xml
