@@ -69,6 +69,17 @@
       <li>Optional nested request-body validation against the bundled OpenAPI spec (<code>validation</code> feature).</li>
     </ul>
 
+    <h2>0.1.1</h2>
+    <p>Corrected endpoint paths and HTTP verbs across the SDK to match Nomba's published OpenAPI spec (and <code>developer.nomba.com</code>). The earlier 0.1.0 shipped several resources against the wrong path namespaces; this release realigns them.</p>
+    <ul style="color: var(--ink-dim);">
+      <li><strong>Charge</strong> &rarr; moved to <code>/v1/checkout/*</code> (tokenized-card-payment, tokenized-card-data) and <code>/v1/transfers/*</code> (banks, bank/lookup). <code>update_tokenized_card</code> is now a <code>POST</code> that updates a card's email (the spec has no <code>PUT</code>).</li>
+      <li><strong>Online Checkout</strong> &rarr; <code>/v1/checkout/orders</code> became the singular <code>/v1/checkout/order</code>; card/OTP/resend/flash/user flows flattened to <code>/v1/checkout/checkout-card-detail</code>, <code>/v1/checkout/checkout-card-otp</code>, <code>/v1/checkout/resend-otp</code>, <code>/v1/checkout/get-checkout-kta/{orderReference}</code>, <code>/v1/checkout/user-card/*</code>, <code>/v1/checkout/transaction/cancel</code>, and <code>/v1/checkout/confirm-transaction-receipt</code>.</li>
+      <li><strong>Transactions</strong> &rarr; <code>/v1/transactions/credit-debit/*</code> &rarr; <code>/v1/transactions/bank[/...]</code>; <code>/v1/transactions/filter/*</code> and <code>/v1/transactions/parent</code> &rarr; <code>/v1/transactions/accounts[/...]</code>; session requery &rarr; <code>/v1/transactions/requery/{sessionId}</code>.</li>
+      <li><strong>Global Collections</strong> &rarr; singular namespace <code>/v1/global-collection/*</code>. Removed <code>fetch_payment_methods</code> and <code>list_institution_providers</code> (no matching spec endpoint).</li>
+      <li><strong>Accounts, Betting, CableTV, Electricity, Terminals, Transfers</strong> &rarr; remapped to their spec paths (e.g. <code>/v1/bill/betting/*</code>, <code>/v1/terminals/assign</code>, <code>/v2/transfers/*</code>).</li>
+      <li>API reference (<code>resources.html</code>) regenerated directly from the SDK source so docs cannot drift from code.</li>
+    </ul>
+
     <div class="page-foot">
       <span>nomba-rust &middot; unofficial Rust SDK</span>
       <span><a href="index.html">Overview</a></span>
