@@ -13,7 +13,7 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="brand">nomba-rust <span class="stamp">RUST-SDK</span></div>
-    <div class="brand-sub">unofficial · v1.0.0</div>
+    <div class="brand-sub">unofficial · v0.1.0</div>
     <nav class="toc">
       <a href="index.html">Overview</a>
       <a href="getting-started.html">Getting started</a>
@@ -44,20 +44,20 @@
     <span class="eyebrow">Unofficial &middot; community-maintained</span>
     <h1>Every Nomba endpoint, already wired.</h1>
     <p style="font-size: 1.1rem; max-width: 60ch;">
-      <code>nomba-rust</code> is a Rust SDK built from Nomba's OpenAPI spec — 14 resource groups,
+      <code>nomba-rs</code> is a Rust SDK built from Nomba's OpenAPI spec — 15 resource groups,
       dual sync/async APIs, with typed responses and request validation built in. No endpoint URLs
       to memorize, no manual token handling, no guessing field names.
     </p>
 
-    <pre><code>cargo add nomba
+    <pre><code>cargo add nomba-rs
 # or
 # [dependencies]
-# nomba = { git = "https://github.com/RightFix/nomba", branch = "main" }
-# features = ["async", "validation"]  # optional</code></pre>
+# nomba-rs = "1.0"
+# nomba-rs = { version = "1.0", features = ["async", "validation"] }  # optional features</code></pre>
 
-    <pre><code>use nomba::{Nomba, NombaClientConfig};
+    <pre><code>use nomba_rs::{Nomba, NombaClientConfig};
 
-fn main() -> nomba::Result<()> {
+fn main() -> nomba_rs::Result<()> {
     let nomba = Nomba::new(
         "your_client_id",
         "your_client_secret",
@@ -78,7 +78,7 @@ fn main() -> nomba::Result<()> {
     <h2>What's covered</h2>
     <div class="grid">
       <a href="resources.html">
-        <span class="num">14 resource groups</span>
+        <span class="num">15 resource groups</span>
         <span class="title">Full API reference</span>
         <span class="desc">Accounts, Virtual Accounts, Checkout, Charge, Transfers, Terminals, Transactions, Airtime/Data, CableTV, Electricity, Betting, Direct Debits, Global Collections, Global Payout.</span>
       </a>
@@ -130,13 +130,17 @@ fn main() -> nomba::Result<()> {
     </div>
 
     <div class="callout">
-      <span class="label">New in v0.1</span>
+      <span class="label">New in v0.1.0</span>
       <p>
-        Added <strong>Auth.revoke_access_token</strong>, <strong>Global Payout accounts</strong>
-        (<code>fetch_accounts</code>, <code>fetch_account</code>, <code>authorize_transfer</code>,
-        <code>authorize_exchange</code>), <strong>CableTV fetch_plans</strong>,
-        <strong>Airtime/Data vend_data with productId</strong>, and fixed Direct Debits endpoints
-        to match the official API paths.
+        Published on crates.io as <strong>nomba-rs</strong> (<code>cargo add nomba-rs</code>).
+        Bills vending moved to the current <strong><code>POST /v2/bill/*</code></strong> routes;
+        <strong>Global Payout</strong> gained <code>convert_money</code>,
+        <code>fetch_exchange_rates</code>, <code>fetch_payment_methods</code>,
+        <code>list_institution_providers</code> and sandbox account endpoints;
+        <strong>Auth</strong> gained <code>refresh_access_token</code>;
+        Checkout user-card flows, terminal payment requests, and Global
+        Collections inflow now match the live API contracts. See the
+        <a href="changelog.html">changelog</a> for the full list.
       </p>
     </div>
 

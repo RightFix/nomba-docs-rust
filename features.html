@@ -13,7 +13,7 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="brand">nomba-rust <span class="stamp">RUST-SDK</span></div>
-    <div class="brand-sub">unofficial &middot; v1.0.0</div>
+    <div class="brand-sub">unofficial &middot; v0.1.0</div>
     <nav class="toc">
       <a href="index.html">Overview</a>
       <a href="getting-started.html">Getting started</a>
@@ -53,20 +53,26 @@
         <code>paginate</code> (sync) and <code>apaginate</code> (async) drive
         that loop for you with an iterator; no second pagination scheme is introduced.
       </p>
-      <pre><code>use nomba::{Nomba, paginate};
+      <pre><code>use nomba_rs::{Nomba, paginate};
 
 let nomba = Nomba::new("id", "secret", "account_id")?;
 
-for account in paginate(|| nomba.accounts.list_all_accounts()) {
-    println!("{}", account.account_ref);
+for account in paginate(|limit, cursor| {
+    nomba.virtual_accounts.filter_virtual_accounts(limit, cursor, None, None, None, None, None, None, None, None)
+}, Some(50)) {
+    println!("{:?}", account?.account_ref);
 }</code></pre>
-      <p>Async variant:</p>
-      <pre><code>use nomba::{AsyncNomba, apaginate};
+      <p>Async variant (a <code>Stream</code>; add <code>futures::StreamExt</code> for <code>.next()</code>):</p>
+      <pre><code>use nomba_rs::{AsyncNomba, apaginate};
+use futures::StreamExt;
 
 let nomba = AsyncNomba::new("id", "secret", "account_id").await?;
+let mut stream = apaginate(|limit, cursor| {
+    nomba.virtual_accounts.filter_virtual_accounts(limit, cursor, None, None, None, None, None, None, None, None)
+}, Some(50));
 
-for await account in apaginate(|| nomba.accounts.list_all_accounts()) {
-    println!("{}", account.account_ref);
+while let Some(account) = stream.next().await {
+    println!("{:?}", account?.account_ref);
 }</code></pre>
       <p>Confirmed paginated endpoints: <code>accounts.list_all_accounts</code>, <code>accounts.fetch_terminals_assigned_to_account</code>, <code>accounts.fetch_terminals_assigned_to_parent_account</code>, <code>virtual_accounts.filter_virtual_accounts</code>, and all six <code>transactions.*</code> list/filter methods.</p>
     </section>
@@ -80,7 +86,7 @@ for await account in apaginate(|| nomba.accounts.list_all_accounts()) {
         wrap the sequence and decode Nomba's response codes into plain booleans,
         instead of you needing to know what <code>"T0"</code> or <code>"S0"</code> mean.
       </p>
-      <pre><code>use nomba::{Nomba, CardPaymentFlow, CardPaymentStep};
+      <pre><code>use nomba_rs::Nomba;
 
 let nomba = Nomba::new("id", "secret", "account_id")?;
 
@@ -90,8 +96,8 @@ let order = nomba.checkout.create_order(
     "https://example.com/callback", None, None
 )?;
 
-let mut flow = CardPaymentFlow::new(nomba, order.data.order_reference);
-let mut step = flow.submit_card("encrypted_card_details", "rsa_key")?;
+let mut flow = nomba.card_payment(order.data.order_reference);
+let mut step = flow.submit_card("encrypted_card_details", "rsa_public_key", Some(true), None)?;
 
 if step.requires_otp {
     step = flow.submit_otp("123456")?;
@@ -103,7 +109,7 @@ if step.completed {
     let result = flow.confirm()?;
 }</code></pre>
       <p>Async variant with <code>AsyncCardPaymentFlow</code>:</p>
-      <pre><code>use nomba::{AsyncNomba, AsyncCardPaymentFlow};
+      <pre><code>use nomba_rs::AsyncNomba;
 
 let nomba = AsyncNomba::new("id", "secret", "account_id").await?;
 
@@ -113,8 +119,8 @@ let order = nomba.checkout.create_order(
     "https://example.com/callback", None, None
 ).await?;
 
-let mut flow = AsyncCardPaymentFlow::new(nomba, order.data.order_reference);
-let mut step = flow.submit_card("encrypted_card_details", "rsa_key").await?;
+let mut flow = nomba.card_payment(order.data.order_reference);
+let mut step = flow.submit_card("encrypted_card_details", "rsa_public_key", Some(true), None).await?;
 
 if step.requires_otp {
     step = flow.submit_otp("123456").await?;
@@ -137,25 +143,23 @@ if step.completed {
         timestamp — a valid signature alone doesn't prove a webhook wasn't
         captured and resent later.
       </p>
-      <pre><code>use nomba::{verify_webhook_signature, check_timestamp_freshness, NombaError};
+      <pre><code>use nomba_rs::{verify_webhook_request, NombaError};
+use std::collections::HashMap;
 
-fn handle_webhook(body: &str, headers: &std::collections::HashMap<String, String>) -> Result<(), NombaError> {
-    let signature = headers.get("nomba-signature").ok_or(NombaError::Auth("Missing signature".into()))?;
-    let timestamp = headers.get("nomba-timestamp").ok_or(NombaError::Auth("Missing timestamp".into()))?;
+fn handle_webhook(body: &[u8], headers: &HashMap<String, String>) -> nomba_rs::Result&lt;()&gt; {
+    // Verifies the nomba-signature header and, with Some(300.0),
+    // rejects timestamps older/newer than 5 minutes (replay protection).
+    let payload = verify_webhook_request(
+        "your_webhook_signature_key",
+        body,
+        headers,
+        Some(300.0),
+    )?;
 
-    // Verify signature
-    let payload = verify_webhook_signature("your-signature-key", body, signature)?;
-
-    // Check replay window (5 min default)
-    check_timestamp_freshness(timestamp, Some(300))?;
-
-    // Process the payload
-    if payload.event_type == "payment_success" {
-        // ...
-    }
+    println!("Received webhook: {:?}", payload);
     Ok(())
 }</code></pre>
-      <p>Pass <code>max_age_seconds: None</code> to <code>check_timestamp_freshness</code> to disable the replay check if you have your own.</p>
+      <p>Lower-level helpers are also available: <code>verify_webhook_signature(key, &payload, signature, timestamp)</code> for a pre-parsed JSON payload, <code>compute_signature(key, &payload, timestamp)</code>, and <code>check_timestamp_freshness(timestamp, max_age_seconds)</code>.</p>
     </section>
 
     <section id="validation">
@@ -165,7 +169,7 @@ fn handle_webhook(body: &str, headers: &std::collections::HashMap<String, String
         is validated against Nomba's bundled OpenAPI spec before any network call.
         This catches missing required fields in nested request bodies that Rust's type system can't enforce.
       </p>
-      <pre><code>use nomba::{validate_body, NombaError};
+      <pre><code>use nomba_rs::{validate_body, NombaError};
 use serde_json::json;
 
 let body = json!({
@@ -178,7 +182,7 @@ let body = json!({
     "allowedPaymentMethods": ["CARD", "ACCOUNT_TRANSFER"],
 });
 
-match validate_body("post", "/v1/checkout/orders", &body) {
+match validate_body("post", "/v1/checkout/order", &body) {
     Ok(_) => println!("Request is valid"),
     Err(NombaError::Validation { missing, .. }) => {
         eprintln!("Missing fields: {:?}", missing);
@@ -196,13 +200,14 @@ match validate_body("post", "/v1/checkout/orders", &body) {
         <code>5xx</code> retry automatically with exponential backoff,
         respecting <code>Retry-After</code> when Nomba sends one.
       </p>
-      <pre><code>use nomba::{NombaClientConfig, Nomba};
+      <pre><code>use nomba_rs::{NombaClientConfig, Nomba};
 
 let config = NombaClientConfig::new("id".into(), "secret".into(), "account_id".into())
-    .max_retries(3)           // default
-    .retry_delay_ms(1000);    // default; delay ~= retry_delay * 2^attempt
+    .timeout(std::time::Duration::from_secs(60)) // default 30s
+    .max_retries(3)           // default; retries 429/5xx
+    .backoff_factor(0.5);     // default; delay ~= factor * 2^attempt + jitter
 
-let nomba = Nomba::from_config(config)?;</code></pre>
+let nomba = Nomba::with_config(config)?;</code></pre>
     </section>
 
     <section id="concurrency">
@@ -210,41 +215,25 @@ let nomba = Nomba::from_config(config)?;</code></pre>
       <p>
         Firing off many calls at once can trigger a retry storm if several
         start failing together, or just trip Nomba's rate limit by bursting
-        too many requests in one window. <code>gather_limited</code> (sync) and
-        <code>gather_limited_async</code> (async) run the same calls with a cap.
+        too many requests in one window. <code>gather_limited</code> and
+        <code>gather_limited_ordered</code> (both <code>async</code>) run the same calls with a cap on in-flight requests.
       </p>
-      <pre><code>use nomba::{Nomba, gather_limited};
-
-let nomba = Nomba::new("id", "secret", "account_id")?;
-
-let refs = vec!["acct-1", "acct-2", "acct-3", "acct-4", "acct-5"];
-let calls: Vec<_> = refs.into_iter().map(|r| move || nomba.virtual_accounts.fetch_virtual_account(r)).collect();
-
-let results = gather_limited(calls, 5)?; // limit 5 concurrent
-for r in results {
-    match r {
-        Ok(acc) => println!("{}", acc.data.account_ref),
-        Err(e) => eprintln!("Error: {}", e),
-    }
-}</code></pre>
-      <p>Async variant with <code>gather_limited_async</code>:</p>
-      <pre><code>use nomba::{AsyncNomba, gather_limited_async};
+      <pre><code>use nomba_rs::{AsyncNomba, gather_limited};
 
 let nomba = AsyncNomba::new("id", "secret", "account_id").await?;
 
 let refs = vec!["acct-1", "acct-2", "acct-3", "acct-4", "acct-5"];
 let calls: Vec<_> = refs.into_iter().map(|r| {
     let nomba = nomba.clone();
-    async move { nomba.virtual_accounts.fetch_virtual_account(r).await }
+    let r = r.to_string();
+    move || async move { nomba.virtual_accounts.fetch_virtual_account(r).await }
 }).collect();
 
-let results = gather_limited_async(calls, 5).await;
+let results = gather_limited(calls, 5, false).await?; // limit 5 concurrent
 for r in results {
-    match r {
-        Ok(acc) => println!("{}", acc.data.account_ref),
-        Err(e) => eprintln!("Error: {}", e),
-    }
+    println!("{:?}", r.data.account_ref);
 }</code></pre>
+      <p>Use <code>gather_limited_ordered</code> (same arguments) when results must come back in input order.</p>
     </section>
 
     <div class="page-foot">

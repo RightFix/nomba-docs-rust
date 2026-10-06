@@ -13,7 +13,7 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="brand">nomba-rust <span class="stamp">RUST-SDK</span></div>
-    <div class="brand-sub">unofficial &middot; v1.0.0</div>
+    <div class="brand-sub">unofficial &middot; v0.1.0</div>
     <nav class="toc">
       <a href="index.html">Overview</a>
       <a href="getting-started.html">Getting started</a>
@@ -209,7 +209,7 @@
     </section>
     <section id="checkout">
       <h2>Online Checkout <span style="font-family: var(--font-mono); font-size: .6em; color: var(--ink-faint); font-weight: 400;">nomba.checkout</span></h2>
-      <p>14 endpoint(s) exposed by this resource group.</p>
+      <p>19 endpoint(s) exposed by this resource group.</p>
       <div class="ledger">
       <div class="ledger-row">
         <span class="method post">POST</span>
@@ -268,9 +268,9 @@
         <span class="summary">resend_otp</span>
       </div>
       <div class="ledger-row">
-        <span class="method get">GET</span>
+        <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/checkout/order/{}</span>
+          <span class="path">/v1/checkout/confirm-transaction-receipt</span>
           <span class="fn">.fetch_transaction_details(&self, order_reference)</span>
         </div>
         <span class="summary">fetch_transaction_details</span>
@@ -287,7 +287,7 @@
         <span class="method post">POST</span>
         <div>
           <span class="path">/v1/checkout/user-card/auth</span>
-          <span class="fn">.request_user_otp(&self, order_reference)</span>
+          <span class="fn">.request_user_otp(&self, order_reference, phone_number)</span>
         </div>
         <span class="summary">request_user_otp</span>
       </div>
@@ -295,7 +295,15 @@
         <span class="method post">POST</span>
         <div>
           <span class="path">/v1/checkout/user-card/saved-card/auth</span>
-          <span class="fn">.submit_user_otp(&self, order_reference, otp)</span>
+          <span class="fn">.request_saved_cards_otp(&self, order_reference)</span>
+        </div>
+        <span class="summary">request_saved_cards_otp</span>
+      </div>
+      <div class="ledger-row">
+        <span class="method post">POST</span>
+        <div>
+          <span class="path">/v1/checkout/user-card</span>
+          <span class="fn">.submit_user_otp(&self, order_reference, phone_number, otp)</span>
         </div>
         <span class="summary">submit_user_otp</span>
       </div>
@@ -303,7 +311,7 @@
         <span class="method get">GET</span>
         <div>
           <span class="path">/v1/checkout/user-card/{}</span>
-          <span class="fn">.fetch_user_saved_cards(&self, order_reference)</span>
+          <span class="fn">.fetch_user_saved_cards(&self, order_reference, otp)</span>
         </div>
         <span class="summary">fetch_user_saved_cards</span>
       </div>
@@ -323,12 +331,6 @@
         </div>
         <span class="summary">cancel_order</span>
       </div>
-      </div>
-    </section>
-    <section id="charge">
-      <h2>Charge <span style="font-family: var(--font-mono); font-size: .6em; color: var(--ink-faint); font-weight: 400;">nomba.charge</span></h2>
-      <p>11 endpoint(s) exposed by this resource group.</p>
-      <div class="ledger">
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
@@ -361,21 +363,43 @@
         </div>
         <span class="summary">delete_tokenized_card</span>
       </div>
+      </div>
+    </section>
+    <section id="charge">
+      <h2>Charge <span style="font-family: var(--font-mono); font-size: .6em; color: var(--ink-faint); font-weight: 400;">nomba.charge</span></h2>
+      <p>9 endpoint(s) exposed by this resource group.</p>
+      <div class="ledger">
+      <div class="ledger-row">
+        <span class="method post">POST</span>
+        <div>
+          <span class="path">/v1/checkout/tokenized-card-payment</span>
+          <span class="fn">.charge_with_tokenized_card(&self, amount, currency, tokenized_card_id, merchant_tx_ref, customer_email, customer_name, description)</span>
+        </div>
+        <span class="summary">charge_with_tokenized_card</span>
+      </div>
       <div class="ledger-row">
         <span class="method get">GET</span>
         <div>
-          <span class="path">/v1/transfers/banks</span>
-          <span class="fn">.fetch_bank_codes(&self)</span>
+          <span class="path">/v1/checkout/tokenized-card-data</span>
+          <span class="fn">.list_tokenized_cards(&self, page, limit)</span>
         </div>
-        <span class="summary">fetch_bank_codes</span>
+        <span class="summary">list_tokenized_cards</span>
       </div>
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/transfers/bank/lookup</span>
-          <span class="fn">.bank_account_lookup(&self, account_number, bank_code)</span>
+          <span class="path">/v1/checkout/tokenized-card-data</span>
+          <span class="fn">.update_tokenized_card(&self, token_key, current_email_address, new_email_address)</span>
         </div>
-        <span class="summary">bank_account_lookup</span>
+        <span class="summary">update_tokenized_card</span>
+      </div>
+      <div class="ledger-row">
+        <span class="method delete">DELETE</span>
+        <div>
+          <span class="path">/v1/checkout/tokenized-card-data</span>
+          <span class="fn">.delete_tokenized_card(&self, token_key)</span>
+        </div>
+        <span class="summary">delete_tokenized_card</span>
       </div>
       <div class="ledger-row">
         <span class="method post">POST</span>
@@ -421,8 +445,24 @@
     </section>
     <section id="transfers">
       <h2>Transfers <span style="font-family: var(--font-mono); font-size: .6em; color: var(--ink-faint); font-weight: 400;">nomba.transfers</span></h2>
-      <p>8 endpoint(s) exposed by this resource group.</p>
+      <p>6 endpoint(s) exposed by this resource group.</p>
       <div class="ledger">
+      <div class="ledger-row">
+        <span class="method get">GET</span>
+        <div>
+          <span class="path">/v1/transfers/banks</span>
+          <span class="fn">.fetch_bank_codes(&self)</span>
+        </div>
+        <span class="summary">fetch_bank_codes</span>
+      </div>
+      <div class="ledger-row">
+        <span class="method post">POST</span>
+        <div>
+          <span class="path">/v1/transfers/bank/lookup</span>
+          <span class="fn">.bank_account_lookup(&self, account_number, bank_code)</span>
+        </div>
+        <span class="summary">bank_account_lookup</span>
+      </div>
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
@@ -454,38 +494,6 @@
           <span class="fn">.wallet_transfer_from_account(&self, account_id, amount, destination_wallet_id, narration, merchant_tx_ref)</span>
         </div>
         <span class="summary">wallet_transfer_from_account</span>
-      </div>
-      <div class="ledger-row">
-        <span class="method post">POST</span>
-        <div>
-          <span class="path">/v1/global-payout/transfer/authorize</span>
-          <span class="fn">.authorize_transfer(&self, transaction_id, otp)</span>
-        </div>
-        <span class="summary">authorize_transfer</span>
-      </div>
-      <div class="ledger-row">
-        <span class="method post">POST</span>
-        <div>
-          <span class="path">/v1/global-payout/exchange/authorize</span>
-          <span class="fn">.authorize_exchange(&self, transaction_id, otp)</span>
-        </div>
-        <span class="summary">authorize_exchange</span>
-      </div>
-      <div class="ledger-row">
-        <span class="method post">POST</span>
-        <div>
-          <span class="path">/v1/global-payout/money/convert</span>
-          <span class="fn">.convert_money(&self, from_amount, from_currency, to_currency)</span>
-        </div>
-        <span class="summary">convert_money</span>
-      </div>
-      <div class="ledger-row">
-        <span class="method get">GET</span>
-        <div>
-          <span class="path">/v1/global-payout/exchange-rates</span>
-          <span class="fn">.fetch_exchange_rates(&self)</span>
-        </div>
-        <span class="summary">fetch_exchange_rates</span>
       </div>
       </div>
     </section>
@@ -529,7 +537,7 @@
         <span class="method post">POST</span>
         <div>
           <span class="path">/v1/terminals/payment-request/{}</span>
-          <span class="fn">.send_payment_request(&self, terminal_id, amount, currency, order_reference, customer_name, customer_phone, customer_email)</span>
+          <span class="fn">.send_payment_request(&self, terminal_id, merchant_tx_ref, amount, currency)</span>
         </div>
         <span class="summary">send_payment_request</span>
       </div>
@@ -620,7 +628,7 @@
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/bill/topup</span>
+          <span class="path">/v2/bill/topup</span>
           <span class="fn">.purchase_airtime_parent(&self, amount, phone_number, network, merchant_tx_ref, sender_name)</span>
         </div>
         <span class="summary">An [`AirtimePurchaseResponse`] with transaction details.</span>
@@ -628,7 +636,7 @@
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/bill/topup/{}</span>
+          <span class="path">/v2/bill/topup/{}</span>
           <span class="fn">.purchase_airtime_account(&self, account_id, amount, phone_number, network, merchant_tx_ref, sender_name)</span>
         </div>
         <span class="summary">An [`AirtimePurchaseResponse`] with transaction details.</span>
@@ -636,15 +644,15 @@
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/bill/data</span>
+          <span class="path">/v2/bill/data</span>
           <span class="fn">.vend_data_parent(&self, product_id, phone_number, network, merchant_tx_ref, sender_name)</span>
         </div>
-        <span class="summary">```</span>
+        <span class="summary">A [`DataVendingResponse`] with transaction details.</span>
       </div>
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/bill/data/{}</span>
+          <span class="path">/v2/bill/data/{}</span>
           <span class="fn">.vend_data_account(&self, account_id, product_id, phone_number, network, merchant_tx_ref, sender_name)</span>
         </div>
         <span class="summary">A [`DataVendingResponse`] with transaction details.</span>
@@ -674,7 +682,7 @@
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/bill/cabletv</span>
+          <span class="path">/v2/bill/cabletv</span>
           <span class="fn">.subscribe_parent(&self, provider, smart_card_number, plan, amount, merchant_tx_ref, phone_number)</span>
         </div>
         <span class="summary">A [`CableTvSubscriptionResponse`] with transaction details.</span>
@@ -682,7 +690,7 @@
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/bill/cabletv/{}</span>
+          <span class="path">/v2/bill/cabletv/{}</span>
           <span class="fn">.subscribe_account(&self, account_id, provider, smart_card_number, plan, amount, merchant_tx_ref, phone_number)</span>
         </div>
         <span class="summary">A [`CableTvSubscriptionResponse`] with transaction details.</span>
@@ -693,7 +701,7 @@
           <span class="path">/v1/bill/cableTvProduct</span>
           <span class="fn">.fetch_plans(&self, cable_tv_type)</span>
         </div>
-        <span class="summary">```</span>
+        <span class="summary">A [`FetchCableTvPlansResponse`] containing the list of plans.</span>
       </div>
       </div>
     </section>
@@ -720,7 +728,7 @@
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/bill/electricity</span>
+          <span class="path">/v2/bill/electricity</span>
           <span class="fn">.vend_parent(&self, provider, meter_number, amount, merchant_tx_ref, phone_number, meter_type)</span>
         </div>
         <span class="summary">vend_parent</span>
@@ -728,7 +736,7 @@
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/bill/electricity/{}</span>
+          <span class="path">/v2/bill/electricity/{}</span>
           <span class="fn">.vend_account(&self, account_id, provider, meter_number, amount, merchant_tx_ref, phone_number, meter_type)</span>
         </div>
         <span class="summary">vend_account</span>
@@ -758,7 +766,7 @@
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/bill/betting</span>
+          <span class="path">/v2/bill/betting</span>
           <span class="fn">.vend_parent(&self, provider, customer_id, amount, merchant_tx_ref, phone_number)</span>
         </div>
         <span class="summary">vend_parent</span>
@@ -766,7 +774,7 @@
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
-          <span class="path">/v1/bill/betting/{}</span>
+          <span class="path">/v2/bill/betting/{}</span>
           <span class="fn">.vend_account(&self, account_id, provider, customer_id, amount, merchant_tx_ref, phone_number)</span>
         </div>
         <span class="summary">vend_account</span>
@@ -823,19 +831,19 @@
           <span class="path">/v1/direct-debits</span>
           <span class="fn">.create_mandate(&self, customer_account_number, customer_account_name, bank_code, amount, customer_name, customer_address, customer_email, customer_phone_number, merchant_reference, frequency, start_date, end_date, narration, start_immediately)</span>
         </div>
-        <span class="summary">```</span>
+        <span class="summary">A [`CreateMandateResponse`] with the created mandate.</span>
       </div>
       </div>
     </section>
     <section id="global_collections">
       <h2>Global Collections <span style="font-family: var(--font-mono); font-size: .6em; color: var(--ink-faint); font-weight: 400;">nomba.global_collections</span></h2>
-      <p>3 endpoint(s) exposed by this resource group.</p>
+      <p>4 endpoint(s) exposed by this resource group.</p>
       <div class="ledger">
       <div class="ledger-row">
         <span class="method post">POST</span>
         <div>
           <span class="path">/v1/global-collection/inflow/initiate</span>
-          <span class="fn">.initiate_mobile_money_inflow(&self, amount, currency, phone_number, provider, merchant_tx_ref, customer_name, customer_email, callback_url)</span>
+          <span class="fn">.initiate_mobile_money_inflow(&self, phone_number, callback_url, amount, currency, topup_vendor, idempotency_key)</span>
         </div>
         <span class="summary">initiate_mobile_money_inflow</span>
       </div>
@@ -851,15 +859,23 @@
         <span class="method get">GET</span>
         <div>
           <span class="path">/v1/global-collection/drc/inflow/providers</span>
-          <span class="fn">.fetch_drc_inflow_providers(&self, sandbox)</span>
+          <span class="fn">.fetch_drc_inflow_providers(&self)</span>
         </div>
         <span class="summary">fetch_drc_inflow_providers</span>
+      </div>
+      <div class="ledger-row">
+        <span class="method get">GET</span>
+        <div>
+          <span class="path">/v1/sandbox/global-collection/drc/inflow/providers</span>
+          <span class="fn">.fetch_drc_inflow_providers_sandbox(&self)</span>
+        </div>
+        <span class="summary">fetch_drc_inflow_providers_sandbox</span>
       </div>
       </div>
     </section>
     <section id="global_payout">
       <h2>Global Payout <span style="font-family: var(--font-mono); font-size: .6em; color: var(--ink-faint); font-weight: 400;">nomba.global_payout</span></h2>
-      <p>5 endpoint(s) exposed by this resource group.</p>
+      <p>11 endpoint(s) exposed by this resource group.</p>
       <div class="ledger">
       <div class="ledger-row">
         <span class="method get">GET</span>
@@ -867,7 +883,7 @@
           <span class="path">/v1/global-payout/accounts</span>
           <span class="fn">.fetch_accounts(&self)</span>
         </div>
-        <span class="summary">```</span>
+        <span class="summary">A [`FetchGlobalPayoutAccountsResponse`] with all currency wallets.</span>
       </div>
       <div class="ledger-row">
         <span class="method get">GET</span>
@@ -875,7 +891,7 @@
           <span class="path">/v1/global-payout/accounts/{}</span>
           <span class="fn">.fetch_account(&self, account_id)</span>
         </div>
-        <span class="summary">```</span>
+        <span class="summary">A [`FetchGlobalPayoutAccountResponse`] with wallet details.</span>
       </div>
       <div class="ledger-row">
         <span class="method post">POST</span>
@@ -883,7 +899,7 @@
           <span class="path">/v1/global-payout/transfer/authorize</span>
           <span class="fn">.authorize_transfer(&self, amount, source_currency, destination_currency, receiver_name, source_country_iso_code, destination_country_iso_code, payment_method, account_type, account_number, institution_code, institution_name, bank_account_type, purpose_of_payment, narration, locked_exchange_rate_id, bank_address, bank_city, bank_state, bank_zip_code, beneficiary)</span>
         </div>
-        <span class="summary">```</span>
+        <span class="summary">An [`AuthorizeTransferResponse`] with transaction details.</span>
       </div>
       <div class="ledger-row">
         <span class="method post">POST</span>
@@ -891,7 +907,7 @@
           <span class="path">/v1/global-payout/exchange/authorize</span>
           <span class="fn">.authorize_exchange(&self, amount, source_currency, destination_currency, sender_name, receiver_name, source_country_iso_code, destination_country_iso_code, narration, locked_exchange_rate_id)</span>
         </div>
-        <span class="summary">```</span>
+        <span class="summary">An [`AuthorizeExchangeResponse`] with transaction details.</span>
       </div>
       <div class="ledger-row">
         <span class="method get">GET</span>
@@ -901,11 +917,59 @@
         </div>
         <span class="summary">A [`FetchGlobalPayoutTransactionResponse`] with transaction details.</span>
       </div>
+      <div class="ledger-row">
+        <span class="method post">POST</span>
+        <div>
+          <span class="path">/v1/global-payout/money/convert</span>
+          <span class="fn">.convert_money(&self, amount, currency, destination_currency, transaction_type)</span>
+        </div>
+        <span class="summary">convert_money</span>
+      </div>
+      <div class="ledger-row">
+        <span class="method get">GET</span>
+        <div>
+          <span class="path">/v1/global-payout/exchange-rates</span>
+          <span class="fn">.fetch_exchange_rates(&self, from, to, region)</span>
+        </div>
+        <span class="summary">fetch_exchange_rates</span>
+      </div>
+      <div class="ledger-row">
+        <span class="method get">GET</span>
+        <div>
+          <span class="path">/v1/global-payout/payment-methods</span>
+          <span class="fn">.fetch_payment_methods(&self, code, name, destination_country_iso_code, destination_currency)</span>
+        </div>
+        <span class="summary">fetch_payment_methods</span>
+      </div>
+      <div class="ledger-row">
+        <span class="method get">GET</span>
+        <div>
+          <span class="path">/v1/global-payout/bank/providers</span>
+          <span class="fn">.list_institution_providers(&self, is_mobile_money, country_iso_code)</span>
+        </div>
+        <span class="summary">list_institution_providers</span>
+      </div>
+      <div class="ledger-row">
+        <span class="method get">GET</span>
+        <div>
+          <span class="path">/v1/sandbox/global-payout/accounts</span>
+          <span class="fn">.fetch_accounts_sandbox(&self)</span>
+        </div>
+        <span class="summary">fetch_accounts_sandbox</span>
+      </div>
+      <div class="ledger-row">
+        <span class="method get">GET</span>
+        <div>
+          <span class="path">/v1/sandbox/global-payout/accounts/{}</span>
+          <span class="fn">.fetch_account_sandbox(&self, account_id)</span>
+        </div>
+        <span class="summary">fetch_account_sandbox</span>
+      </div>
       </div>
     </section>
     <section id="auth">
       <h2>Auth <span style="font-family: var(--font-mono); font-size: .6em; color: var(--ink-faint); font-weight: 400;">nomba.auth</span></h2>
-      <p>1 endpoint(s) exposed by this resource group.</p>
+      <p>2 endpoint(s) exposed by this resource group.</p>
       <div class="ledger">
       <div class="ledger-row">
         <span class="method post">POST</span>
@@ -913,12 +977,20 @@
           <span class="path">/v1/auth/token/revoke</span>
           <span class="fn">.revoke_access_token(&self, access_token)</span>
         </div>
-        <span class="summary">```</span>
+        <span class="summary">revoke_access_token</span>
+      </div>
+      <div class="ledger-row">
+        <span class="method post">POST</span>
+        <div>
+          <span class="path">/v1/auth/token/refresh</span>
+          <span class="fn">.refresh_access_token(&self, refresh_token)</span>
+        </div>
+        <span class="summary">refresh_access_token</span>
       </div>
       </div>
     </section>
   </main>
 </div>
-<script src="assets/nav.js"></script>
+<script src="assets/app.js"></script>
 </body>
 </html>

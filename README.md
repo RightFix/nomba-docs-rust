@@ -11,7 +11,7 @@ This is a static site (plain HTML/CSS/JS) published with GitHub Pages at:
 - `index.html` — overview
 - `getting-started.html` — install, feature flags, sync vs async, error handling
 - `features.html` — pagination, card-payment flow, webhooks, reliability
-- `resources.html` — full API reference (99 endpoints, 15 resource groups)
+- `resources.html` — full API reference (106 endpoints, 15 resource groups)
 - `changelog.html` — version history
 - `assets/` — shared stylesheet and script
 

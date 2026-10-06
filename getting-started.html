@@ -13,7 +13,7 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="brand">nomba-rust <span class="stamp">RUST-SDK</span></div>
-    <div class="brand-sub">unofficial &middot; v1.0.0</div>
+    <div class="brand-sub">unofficial &middot; v0.1.0</div>
     <nav class="toc">
       <a href="index.html">Overview</a>
       <a href="getting-started.html">Getting started</a>
@@ -46,10 +46,10 @@
     <p>Three things you need from your Nomba dashboard: a <code>client_id</code>, a <code>client_secret</code>, and an <code>account_id</code>. The SDK handles the OAuth2 token exchange for you from there.</p>
 
     <h2>Install</h2>
-    <pre><code>cargo add nomba
+    <pre><code>cargo add nomba-rs
 # or add to Cargo.toml:
-# nomba = { git = "https://github.com/RightFix/nomba", branch = "main" }
-# nomba = { version = "0.1", features = ["async", "validation"] }  # optional features</code></pre>
+# nomba-rs = "1.0"
+# nomba-rs = { version = "1.0", features = ["async", "validation"] }  # optional features</code></pre>
 
     <h2>Feature flags</h2>
     <p>The SDK has three feature flags (all enabled by default except <code>validation</code>):</p>
@@ -61,9 +61,9 @@
 
     <h2>Sync client</h2>
     <p>Create one <code>Nomba</code> instance and reuse it; it manages its own HTTP connection pool and OAuth2 token cache.</p>
-    <pre><code>use nomba::{Nomba, NombaClientConfig};
+    <pre><code>use nomba_rs::{Nomba, NombaClientConfig};
 
-fn main() -> nomba::Result<()> {
+fn main() -> nomba_rs::Result<()> {
     let nomba = Nomba::new(
         "your_client_id",
         "your_client_secret",
@@ -91,10 +91,10 @@ fn main() -> nomba::Result<()> {
 
     <h2>Async client</h2>
     <p>Rust async with Tokio — every resource method is an <code>async</code> function returning a <code>Future</code>.</p>
-    <pre><code>use nomba::AsyncNomba;
+    <pre><code>use nomba_rs::AsyncNomba;
 
 #[tokio::main]
-async fn main() -> nomba::Result<()> {
+async fn main() -> nomba_rs::Result<()> {
     let nomba = AsyncNomba::new(
         "your_client_id",
         "your_client_secret",
@@ -118,7 +118,7 @@ let async_nomba = AsyncNomba::new_sandbox("id", "secret", "account_id").await?;<
 
     <h2>Error handling</h2>
     <p>All errors are <code>NombaError</code> enum variants. Use <code>match</code> for exhaustive handling:</p>
-    <pre><code>use nomba::{NombaError, Result};
+    <pre><code>use nomba_rs::{NombaError, Result};
 
 match nomba.virtual_accounts.create_virtual_account("ref", "Name", None, None, None) {
     Ok(response) => println!("Success: {:?}", response),
@@ -162,7 +162,7 @@ println!("Checkout link: {}", order.data.checkout_link);</code></pre>
 
     <h2>Local request validation</h2>
     <p>With the <code>validation</code> feature, write calls (<code>POST</code>/<code>PUT</code>) are validated against Nomba's bundled OpenAPI spec before any network request:</p>
-    <pre><code>use nomba::{validate_body, NombaError};
+    <pre><code>use nomba_rs::{validate_body, NombaError};
 use serde_json::json;
 
 let body = json!({
@@ -175,7 +175,7 @@ let body = json!({
     "allowedPaymentMethods": ["CARD", "ACCOUNT_TRANSFER"],
 });
 
-match validate_body("post", "/v1/checkout/orders", &body) {
+match validate_body("post", "/v1/checkout/order", &body) {
     Ok(_) => println!("Request is valid"),
     Err(NombaError::Validation { missing, .. }) => {
         eprintln!("Missing fields: {:?}", missing);
