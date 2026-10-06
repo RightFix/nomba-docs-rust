@@ -13,7 +13,7 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="brand">nomba-rust <span class="stamp">RUST-SDK</span></div>
-    <div class="brand-sub">unofficial · v0.1.0</div>
+    <div class="brand-sub">unofficial · v0.2.0</div>
     <nav class="toc">
       <a href="index.html">Overview</a>
       <a href="getting-started.html">Getting started</a>
@@ -52,8 +52,8 @@
     <pre><code>cargo add nomba-rs
 # or
 # [dependencies]
-# nomba-rs = "1.0"
-# nomba-rs = { version = "1.0", features = ["async", "validation"] }  # optional features</code></pre>
+# nomba-rs = "0.2"
+# nomba-rs = { version = "0.2", features = ["async", "validation"] }  # optional features</code></pre>
 
     <pre><code>use nomba_rs::{Nomba, NombaClientConfig};
 
@@ -130,17 +130,14 @@ fn main() -> nomba_rs::Result<()> {
     </div>
 
     <div class="callout">
-      <span class="label">New in v0.1.0</span>
+      <span class="label">New in v0.2.0</span>
       <p>
-        Published on crates.io as <strong>nomba-rs</strong> (<code>cargo add nomba-rs</code>).
-        Bills vending moved to the current <strong><code>POST /v2/bill/*</code></strong> routes;
-        <strong>Global Payout</strong> gained <code>convert_money</code>,
-        <code>fetch_exchange_rates</code>, <code>fetch_payment_methods</code>,
-        <code>list_institution_providers</code> and sandbox account endpoints;
-        <strong>Auth</strong> gained <code>refresh_access_token</code>;
-        Checkout user-card flows, terminal payment requests, and Global
-        Collections inflow now match the live API contracts. See the
-        <a href="changelog.html">changelog</a> for the full list.
+        Cleanup release: simpler <code>gather_limited(calls, limit)</code> signatures,
+        an <code>AsyncPaginator</code> that works with plain <code>async move</code> blocks,
+        validation coverage for the current <code>/v2/bill/*</code> routes, and
+        working pagination examples. Upgrading from 0.1.x means dropping the
+        third <code>return_exceptions</code> argument — see the
+        <a href="changelog.html">changelog</a>.
       </p>
     </div>
 

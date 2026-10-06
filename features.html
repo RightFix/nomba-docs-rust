@@ -13,7 +13,7 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="brand">nomba-rust <span class="stamp">RUST-SDK</span></div>
-    <div class="brand-sub">unofficial &middot; v0.1.0</div>
+    <div class="brand-sub">unofficial &middot; v0.2.0</div>
     <nav class="toc">
       <a href="index.html">Overview</a>
       <a href="getting-started.html">Getting started</a>
@@ -54,25 +54,45 @@
         that loop for you with an iterator; no second pagination scheme is introduced.
       </p>
       <pre><code>use nomba_rs::{Nomba, paginate};
+use std::collections::HashMap;
 
 let nomba = Nomba::new("id", "secret", "account_id")?;
 
-for account in paginate(|limit, cursor| {
-    nomba.virtual_accounts.filter_virtual_accounts(limit, cursor, None, None, None, None, None, None, None, None)
-}, Some(50)) {
-    println!("{:?}", account?.account_ref);
+let accounts = paginate(|limit, cursor| {
+    nomba.virtual_accounts.filter_virtual_accounts(
+        limit.map(|n| n.to_string()),
+        cursor,
+        None, None, None, None, None, None, None, None,
+    )
+    .and_then(|resp| serde_json::to_value(resp.data).map_err(nomba_rs::NombaError::from))
+}, Some(50));
+
+for account in accounts {
+    let account: HashMap<String, serde_json::Value> = account?;
+    println!("{:?}", account.get("accountRef"));
 }</code></pre>
       <p>Async variant (a <code>Stream</code>; add <code>futures::StreamExt</code> for <code>.next()</code>):</p>
       <pre><code>use nomba_rs::{AsyncNomba, apaginate};
 use futures::StreamExt;
+use std::collections::HashMap;
 
 let nomba = AsyncNomba::new("id", "secret", "account_id").await?;
 let mut stream = apaginate(|limit, cursor| {
-    nomba.virtual_accounts.filter_virtual_accounts(limit, cursor, None, None, None, None, None, None, None, None)
+    let accounts = nomba.virtual_accounts.clone();
+    async move {
+        accounts.filter_virtual_accounts(
+            limit.map(|n| n.to_string()),
+            cursor,
+            None, None, None, None, None, None, None, None,
+        )
+        .await
+        .and_then(|resp| serde_json::to_value(resp.data).map_err(nomba_rs::NombaError::from))
+    }
 }, Some(50));
 
 while let Some(account) = stream.next().await {
-    println!("{:?}", account?.account_ref);
+    let account: HashMap<String, serde_json::Value> = account?;
+    println!("{:?}", account.get("accountRef"));
 }</code></pre>
       <p>Confirmed paginated endpoints: <code>accounts.list_all_accounts</code>, <code>accounts.fetch_terminals_assigned_to_account</code>, <code>accounts.fetch_terminals_assigned_to_parent_account</code>, <code>virtual_accounts.filter_virtual_accounts</code>, and all six <code>transactions.*</code> list/filter methods.</p>
     </section>
@@ -229,7 +249,7 @@ let calls: Vec<_> = refs.into_iter().map(|r| {
     move || async move { nomba.virtual_accounts.fetch_virtual_account(r).await }
 }).collect();
 
-let results = gather_limited(calls, 5, false).await?; // limit 5 concurrent
+let results = gather_limited(calls, 5).await?; // limit 5 concurrent
 for r in results {
     println!("{:?}", r.data.account_ref);
 }</code></pre>

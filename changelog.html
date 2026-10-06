@@ -13,7 +13,7 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="brand">nomba-rust <span class="stamp">RUST-SDK</span></div>
-    <div class="brand-sub">unofficial &middot; v0.1.0</div>
+    <div class="brand-sub">unofficial &middot; v0.2.0</div>
     <nav class="toc">
       <a href="index.html">Overview</a>
       <a href="getting-started.html">Getting started</a>
@@ -44,8 +44,11 @@
     <span class="eyebrow">Changelog</span>
     <h1>Version history</h1>
 
+    <h2>0.2.0</h2>
+    <p>Breaking cleanup: <code>gather_limited</code> / <code>gather_limited_ordered</code> dropped the inert <code>return_exceptions</code> flag; <code>AsyncPaginator</code> accepts non-<code>Unpin</code> futures and reuses in-flight requests. Also removed the unused <code>serde_with</code> dependency, extended the bundled OpenAPI spec to the current <code>/v2/bill/*</code> and sandbox routes, and fixed the pagination examples.</p>
+
     <h2>0.1.0</h2>
-    <p>First crates.io release as <code>nomba-rs</code> v0.1.0 (<code>cargo add nomba-rs</code>, author Righteousness Ude, AGPL-3.0-only), aligned with the current <a href="https://developer.nomba.com">Nomba API documentation</a>. Deprecated routes removed, missing current routes added.</p>
+    <p>First crates.io release as <code>nomba-rs</code> v0.2.0 (<code>cargo add nomba-rs</code>, author Righteousness Ude, AGPL-3.0-only), aligned with the current <a href="https://developer.nomba.com">Nomba API documentation</a>. Deprecated routes removed, missing current routes added.</p>
     <ul style="color: var(--ink-dim);">
       <li>Crate renamed <code>nomba</code> &rarr; <code>nomba-rs</code> (import as <code>nomba_rs</code>); canonical AGPL-3.0 license text.</li>
       <li>Bills vending moved to the current <code>POST /v2/bill/*</code> routes (airtime topup, data, electricity, cable TV, betting — parent and sub-account).</li>
